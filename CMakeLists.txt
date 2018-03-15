@@ -5,8 +5,8 @@ project(Weirds)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(tree
+add_executable(run
   main.cpp
 )
 
-#target_link_libraries(tree ntl m gmp)
+target_link_libraries(run ntl m gmp)
