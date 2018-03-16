@@ -10,8 +10,9 @@
 using NTL::RR;
 using NTL::ZZ;
 using std::vector;
-using NTL::conv;
 
+using NTL::conv;
+using NTL::NextPrime;
 //#define DEBUG
 
 #ifdef DEBUG
@@ -30,11 +31,11 @@ RR Delta(ZZ& p);
 RR Delta(ZZ& p, ZZ& e){
 
   RR pr = conv<RR>(p); // convPrec(p, 53)
-  RR er = conv<RR>(e);
+  long er = conv<long>(e);
 
-  return (pow(pr, er + RR(2)) - RR(1)) /
+  return (power(pr, er + 2.0) - RR(1)) /
 /*      -----------------------------------       */
-         (pr * (pow(pr, er + RR(1)) - RR(1)));
+         (pr * (power(pr, er + 1.0) - RR(1)));
 }
 
 RR Delta(ZZ& p){
@@ -77,6 +78,20 @@ RR b(ZZ& p, ZZ& e){
 
 }
 
+RR b_1(ZZ& p){
+
+  RR pr = conv<RR>(p);
+  return (pow(pr, RR(2)), - RR(1)) / (pr * pr - pr);
+}
+
+RR b_1(vector<ZZ>& prime){  
+
+  RR product;
+  for (auto& p : prime){product*=b_1(p);}
+
+  return product;
+}
+
 RR b(ZZ& p){
   ZZ e(1);
   return b(p, e);
@@ -103,7 +118,6 @@ RR b(vector<ZZ>& primes, vector<ZZ>& expos){
 
   return product;
 }
-
 //REQUIRES AT LEAST TWO PRIMES.
 bool primitive(vector<ZZ>& primes, vector<ZZ>& expos, List& l){
 
@@ -130,7 +144,33 @@ bool primitive(vector<ZZ>& primes, vector<ZZ>& expos, List& l){
   return true;
 }
 
-RR mb(vector <ZZ> primes,vector<ZZ> expos, List& l){
+
+//REQUIRES AT LEAST TWO PRIMES.
+bool primitive(vector<ZZ>& primes, vector<ZZ>& expos){
+
+  #ifdef DEBUG
+    std::cout << "In Primitive(nolist) with: ";
+    printvect(primes);
+    std::cout << "\nAnd exponents: ";
+    printvect(expos);
+  #endif
+
+  for (int i = primes.size() - 1; i > 0; --i){
+    ZZ p = primes[i];
+    ZZ e = expos[i];
+ 
+    if (b(primes, expos) * del_neg(p, e) >= RR(2))
+      return false;
+  }
+
+  #ifdef DEBUG
+    std::cout << "Primitive Succeeded\n";
+  #endif
+
+  return true;
+}
+
+RR mb(vector<ZZ>& primes,vector<ZZ>& expos, List& l){
   #ifdef DEBUG
     std::cout << "In mb with: ";
     printvect(primes);
@@ -158,4 +198,15 @@ RR mb(vector <ZZ> primes,vector<ZZ> expos, List& l){
   #endif
  
   return product;
+}
+
+ZZ def_prime(vector<ZZ>& primes){
+
+  RR b1 = b_1(primes);
+
+  RR bound = b1 / (RR(2) - b1);
+
+  ZZ prime = NextPrime(NTL::CeilToZZ(bound));
+
+  return prime;
 }

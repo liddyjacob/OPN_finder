@@ -6,6 +6,9 @@
 int main(){
 
 
+  OPAN(4);
+
+/*
 //  test_list();
 
   vector<ZZ> primes;
@@ -26,7 +29,7 @@ int main(){
     }
     std::cout << '\n';
   }
-  
+*/
   return 0;
 
 }
