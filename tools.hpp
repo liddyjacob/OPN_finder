@@ -12,6 +12,18 @@ using NTL::ZZ;
 using std::vector;
 using NTL::conv;
 
+//#define DEBUG
+
+#ifdef DEBUG
+template<typename T>
+void printvect(vector<T> vect){
+  for (auto v : vect){
+    std::cout << v << ", ";
+  }
+}
+#endif
+
+
 RR Delta(ZZ& p, ZZ& e);
 RR Delta(ZZ& p);
 
@@ -72,6 +84,14 @@ RR b(ZZ& p){
 
 RR b(vector<ZZ>& primes, vector<ZZ>& expos){
 
+  #ifdef DEBUG
+    std::cout << "In b with: ";
+    printvect(primes);
+    std::cout << "\nAnd exponents: ";
+    printvect(expos);
+    std::cout << std::endl;
+  #endif
+
   if (primes.size() != expos.size()){
     std::cerr << "from b(P, E): Exponent and prime sequence sizes are not the same!\n";
     return RR(-1);
@@ -87,65 +107,55 @@ RR b(vector<ZZ>& primes, vector<ZZ>& expos){
 //REQUIRES AT LEAST TWO PRIMES.
 bool primitive(vector<ZZ>& primes, vector<ZZ>& expos, List& l){
 
-  ListIter iter(l);
-  iter.position = l.tail->prev;
+  #ifdef DEBUG
+    std::cout << "In Primitive with: ";
+    printvect(primes);
+    std::cout << "\nAnd exponents: ";
+    printvect(expos);
+    display(l);
+  #endif
 
-  for (iter; iter != begin(l); --iter){
-    ZZ p = primes[index(iter)];
-    ZZ e = primes[index(iter)];
+  for (int i = l.size() - 1; i > 0; --i){
+    ZZ p = primes[l[i]];
+    ZZ e = expos[l[i]];
+ 
     if (b(primes, expos) * del_neg(p, e) >= RR(2))
       return false;
   }
 
+  #ifdef DEBUG
+    std::cout << "Primitive Succeeded\n";
+  #endif
+
   return true;
 }
 
-
-//delta(iter) got smaller, move to the right.
-void resort(ListIter iter, List G,  ZZ& p, ZZ& e){
-
-  delta(iter) = Delta(p, e); 
-  ListIter curr = iter;
-
-  while (curr != end(G)){
-    if (delta(curr) > delta(iter)){
-      ++curr;
-    } else { 
-      place_before(iter, curr, G);
-      return;
-    }
-  }
-
-  if (delta(curr) > delta(iter)){
-    place_after(iter, curr, G);
-  } else {
-    place_before(iter, curr, G);
-  } 
-}
-
-RR mb(vector <ZZ> primes,vector<ZZ> expos, ListIter iter){
-
-  ListIter after = iter; // To infinite exponent
-  ListIter before = iter; // to regular exponent
-    --before;
+RR mb(vector <ZZ> primes,vector<ZZ> expos, List& l){
+  #ifdef DEBUG
+    std::cout << "In mb with: ";
+    printvect(primes);
+    std::cout << "\nAnd exponents: ";
+    printvect(expos);
+    std::cout << std::endl;
+  #endif
 
   RR product(1);
 
-  while (before.position != NULL){
-    product *= b(primes[index(before)], expos[index(before)]);
-    --before;
+  for (int i = 0; i < l.at(); ++i){
+    product *= b(primes[l[i]], expos[l[i]]);
+  }
+  
+  #ifdef DEBUG
+    std::cout << "Finite Product: " << product << std::endl;
+  #endif
+
+  for (int i = l.at(); i < l.size(); ++i){
+    product *= b_inf(primes[l[i]]);
   }
 
-  while (after.position != NULL){
-    product *= b_inf(primes[index(after)]);
-    ++after;
-  }
-
+  #ifdef DEBUG
+    std::cout << "Total Product: " << product << std::endl;
+  #endif
+ 
   return product;
 }
-
-
-
-
-
-
