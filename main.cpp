@@ -1,23 +1,21 @@
+#include <omp.h>
+#include "list.hpp"
 #include "opnalg.hpp"
 
 #define TEST;
-#include "list.hpp"
 
 int main(){
 
-
-  OPAN(4);
-
-/*
+  OPAN(5);
 //  test_list();
-
+/*
   vector<ZZ> primes;
     primes.push_back(ZZ(3));
     primes.push_back(ZZ(5));
     primes.push_back(ZZ(17));
-    primes.push_back(ZZ(181));
-    primes.push_back(ZZ(181001));
-    primes.push_back(ZZ(32760999911));
+//    primes.push_back(ZZ(181));
+//    primes.push_back(ZZ(181001));
+//    primes.push_back(ZZ(32760999911));
 //    primes.push_back(ZZ(11));
 //    primes.push_back(ZZ(13));
 
