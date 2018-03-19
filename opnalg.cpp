@@ -10,7 +10,7 @@
 void OPAN(int d){
 
   std::vector<Tree> factor_trees;
-  Stats s;
+  Stats s(ZZ(17));
 
   for (int factors = 3; factors <= d; ++factors){
 
@@ -161,14 +161,50 @@ bool cap_check(vector<ZZ>& primes,
 void expand(vector<ZZ>& primes, Stats& s){
 
     vector<vector<ZZ> > exp_seqs;
-    
-    while (exp_find_noexp(primes, exp_seqs, s)){
+    ZZ prev;
 
+    vector<vector<ZZ> > last_exps;
+    bool two_mode = false;
+    ZZ powerOfTwo(2);
+    ZZ last_prime(0);
+
+
+    while (exp_find_noexp(primes, exp_seqs, s) || two_mode){
+
+      //Two mode:
+      if (last_exps == exp_seqs){
+        
+        two_mode = true;
+        powerOfTwo *= ZZ(2);
+
+        prev = primes[primes.size() - 1];
+
+        primes.pop_back();
+        primes.push_back(NextPrime(powerOfTwo + prev));
+
+        ZZ num_primes = primes_between(last_prime, prev);
+        s.number_found += num_primes * exp_seqs.size();
+        record(s);
+
+        last_prime = prev;
+        last_exps = exp_seqs;
+
+        continue;
+      }
+
+      two_mode = false;
+      prev = last_prime;
+      powerOfTwo = ZZ(2);
+      last_prime = ZZ(0);
+
+      //Otherwise: return things to normal.
       record(s);
+
       ZZ prev = primes[primes.size() - 1];
       primes.pop_back();
       primes.push_back(NextPrime(prev + ZZ(1)));
 
+      last_exps = exp_seqs;
     }
   }
 
@@ -202,6 +238,22 @@ void record(Stats& s){
   file.close();
   }
   return;
+}
+
+ZZ primes_between(ZZ& lower, ZZ& upper){
+
+  if (lower == ZZ(0)) { return ZZ(0); }
+
+  ZZ prime = NextPrime(lower + ZZ(1));
+  ZZ num(0);
+
+
+  while (prime < upper){
+    ++num;
+    prime = NextPrime(prime + (ZZ(1)));
+  }
+  
+  return num;
 }
 
 ZZ product(vector<ZZ>& primes, vector<ZZ>& exps){

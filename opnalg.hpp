@@ -38,6 +38,7 @@ bool exp_find(vector<ZZ>& primes,
               vector<vector<ZZ> >& leaves);
 
 void record(Stats& s);
+ZZ primes_between(ZZ& lower, ZZ& upper);
 
 void expand(vector<ZZ>& primes, Stats& s);
 void expand_sets(vector<vector<ZZ> >& leaves, Stats& s);

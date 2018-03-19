@@ -8,7 +8,7 @@ int main(){
   #pragma omp paralell
 //  for (int i = 0; i < 10000000000; ++i){}
 
-  OPAN(6);
+  OPAN(5);
 //  test_list();
 /*
   vector<ZZ> primes;
