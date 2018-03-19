@@ -6,9 +6,11 @@
 
 #include "opnalg.hpp"
 
+
 void OPAN(int d){
 
   std::vector<Tree> factor_trees;
+  Stats s;
 
   for (int factors = 3; factors <= d; ++factors){
 
@@ -56,7 +58,7 @@ void OPAN(int d){
         }
       }
     }
-    expand_sets(leaves);
+    expand_sets(leaves, s);
   }
   return;
 }
@@ -100,12 +102,12 @@ bool exp_find(vector<ZZ>& primes,
 
 
 bool exp_find_noexp(vector<ZZ>& primes, 
-              vector<vector<ZZ> >& exp_seqs){
-
+              vector<vector<ZZ> >& exp_seqs, Stats& s){
   if (!exp_seqs.empty()){
     int i = 0;
-     
-    for (auto exps : exp_seqs){
+
+    for (int i = 0; i < exp_seqs.size(); ++i){
+      vector<ZZ>& exps = exp_seqs[i];
       if (b(primes, exps) < RR(2)){ break; }            
       if (!primitive(primes, exps)) { break; }
       ++i;
@@ -114,18 +116,21 @@ bool exp_find_noexp(vector<ZZ>& primes,
 
       exp_seqs = expAlg(primes);
       if (!exp_seqs.empty()){
-        return true;
+       modify(s, primes, exp_seqs);
+       return true;
       }
 
       return false;
     } else {
-
+      modify(s, primes, exp_seqs);
       return true;
     }
   }
 
   exp_seqs = expAlg(primes);
+
   if (!exp_seqs.empty()){
+    modify(s, primes, exp_seqs);
     return true;
   }
   return false;
@@ -153,13 +158,13 @@ bool cap_check(vector<ZZ>& primes,
   return false;
 }
 
-void expand(vector<ZZ>& primes){
+void expand(vector<ZZ>& primes, Stats& s){
 
     vector<vector<ZZ> > exp_seqs;
     
-    while (exp_find_noexp(primes, exp_seqs)){
+    while (exp_find_noexp(primes, exp_seqs, s)){
 
-      record(primes, exp_seqs);
+      record(s);
       ZZ prev = primes[primes.size() - 1];
       primes.pop_back();
       primes.push_back(NextPrime(prev + ZZ(1)));
@@ -168,43 +173,60 @@ void expand(vector<ZZ>& primes){
   }
 
 
-void expand_sets(vector<vector <ZZ>>& sets){
+void expand_sets(vector<vector <ZZ>>& sets, Stats& s){
 
-  int omp_get_thread_num();
-  #pragma omp paralell for 
+  
+  #pragma omp parallel for 
   for (int i = 0; i < sets.size(); ++i){
     vector<ZZ> primes = sets[i];
     vector<vector<ZZ> > exp_seqs; 
-    expand(primes);
+    expand(primes, s);
   } 
 }
 
-void record(vector<ZZ>& primes, vector<vector<ZZ> >& exp_seqs){
+void record(Stats& s){
 
+  if (s.number_found % s.freq == ZZ(0)){
   std::ofstream file;
-  file.open("abundant.txt", std::ios::app);
+  file.open("stats.txt", std::ios::app);
 
-  for (vector<ZZ> exps : exp_seqs){
-    for (int i = 0; i < exps.size(); ++i){
-
-      file << primes[i] << "^" << exps[i] << " ";
-
+  file << "Number Found = " << s.number_found << '\n';
+  file << "Max product: ";
+    for (int i = 0; i < s.max_primes.size(); ++i){
+      file << s.max_primes[i] << '^' << s.max_exps[i] << ' ';
     }
-    file << '\n';
-  }
 
-/*  for (auto p : primes){
-    file << p << ",";
-  }
+  file << "\n\n";
+  
 
-  for (vector<ZZ> exps : exp_seqs){
-    file << "\n\t";
-    for (ZZ e : exps){
-      file << e << ":";
-    }
-  }
-//  file << '\n';
-*/
   file.close();
+  }
   return;
+}
+
+ZZ product(vector<ZZ>& primes, vector<ZZ>& exps){
+
+  ZZ product(1);
+
+  for (int i= 0; i < primes.size(); ++i){
+    product *= NTL::power(primes[i], NTL::conv<long>(exps[i]));
+  }
+
+  return product;
+}
+
+void modify(Stats& s, vector<ZZ>& primes, vector<vector<ZZ> >& exp_seqs){
+
+  s.number_found += exp_seqs.size();
+  
+  for (auto& exps : exp_seqs){
+
+    if (product(primes, exps) > s.product){
+      s.max_primes = primes;
+      s.max_exps = exps;
+      s.product = product(primes, exps);
+    }
+
+  }
+
 }

@@ -5,13 +5,29 @@
 #include <vector>
 #include <omp.h>
 #include <fstream>
-//#include "tree.hpp"
-//#include "expalg.hpp"
-//#include "tools.hpp"
+#include "tree.hpp"
+#include "expalg.hpp"
+#include "tools.hpp"
 
 using std::vector;
 using NTL::ZZ;
 using NTL::RR;
+using NTL::pow;
+
+struct Stats{
+
+  Stats(ZZ updatefreq = ZZ(10007))// 100003
+  { freq = updatefreq; }
+
+  ZZ number_found;
+  ZZ freq;
+  ZZ product;
+
+  vector<ZZ> max_primes;
+  vector<ZZ> max_exps;
+};
+
+void modify(Stats& s, vector<ZZ>& primes, vector<vector<ZZ> >& exp_seqs);
 
 bool cap_check(vector<ZZ>& primes, 
                vector<Tree>& factor_trees, 
@@ -21,14 +37,12 @@ bool exp_find(vector<ZZ>& primes,
               vector<vector<ZZ> >& exp_seqs,
               vector<vector<ZZ> >& leaves);
 
-void record(vector<ZZ>& primes,
-            vector<vector<ZZ >>& exp_seqs);
+void record(Stats& s);
 
-void expand(vector<ZZ>& primes);
-void expand_sets(vector<vector<ZZ> >& leaves);
+void expand(vector<ZZ>& primes, Stats& s);
+void expand_sets(vector<vector<ZZ> >& leaves, Stats& s);
 
 void OPAN(int d);
 
 bool exp_find_noexp(vector<ZZ>& primes, 
-              vector<vector<ZZ> >& exp_seqs);
-
+              vector<vector<ZZ> >& exp_seqs, Stats& s);
