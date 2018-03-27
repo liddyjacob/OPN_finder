@@ -15,7 +15,7 @@ void OPAN(int d){
     Tree& tree = factor_trees.back();
       grow(tree, RR(3));
 
-    vector<vector<ZZ> > leaves;
+    vector<Node*> leaves;
     vector<vector<ZZ> > exp_seqs;
     bool growing = true;
 
@@ -42,63 +42,32 @@ void OPAN(int d){
       }
 
 
-      if (exp_find(primes, exp_seqs, leaves)){
-
+      if (exp_find(primes, exp_seqs)){
+        leaves.push_back(tree.curr);
         success(tree);
         fail(tree);
-
+  
+        //std::cout << "Primes size is checked...\n";
       } else {
-
         //cap check - see if primes is at its cap!
         if (!cap_check(primes, factor_trees, factors)){ 
+
           growing = fail(tree);
         }
       }
     }
     expand_sets(leaves, s);
   }
+
+  for (auto& tree : factor_trees){
+    display(tree);
+  }
+
   return;
 }
 
 
 bool exp_find(vector<ZZ>& primes, 
-              vector<vector<ZZ> >& exp_seqs,
-              vector<vector<ZZ> >& leaves){
-
-  if (!exp_seqs.empty()){
-    int i = 0;
-     
-    for (auto exps : exp_seqs){
-      if (b(primes, exps) < RR(2)){ break; }            
-      if (!primitive(primes, exps)) { break; }
-      ++i;
-    }
-    if (i != exp_seqs.size()) {
-
-      exp_seqs = expAlg(primes);
-      if (!exp_seqs.empty()){
-        leaves.push_back(primes);
-        return true;
-      }
-
-      return false;
-    }
-    leaves.push_back(primes);
-    return true;
-  }
-
-  exp_seqs = expAlg(primes);
-
-  if (!exp_seqs.empty()){
-    leaves.push_back(primes);
-    return true;
-  }
-
-  return false;
-}
-
-
-bool exp_find_noexp(vector<ZZ>& primes, 
               vector<vector<ZZ> >& exp_seqs){
   if (!exp_seqs.empty()){
     int i = 0;
@@ -122,7 +91,6 @@ bool exp_find_noexp(vector<ZZ>& primes,
   }
 
   exp_seqs = expAlg(primes);
-
   return (!exp_seqs.empty());
 }
 
@@ -130,21 +98,24 @@ bool exp_find_noexp(vector<ZZ>& primes,
 bool cap_check(vector<ZZ>& primes, 
                vector<Tree>& factor_trees, 
                int& factors){
-/*
-  ZZ truncp = backup(factor_tree);
-  primes = strip_primes(factor_tree);
 
-  if (primes.size() >= factors - 1){
+  ZZ truncp = backup(factor_trees.back());
+  primes = strip_primes(factor_trees.back());
+
+  if (primes.size() == factors - 1){
     return false;
   }
+  std::cout << "Primes are the right size!\n";
 
-  ZZ cap = findmax(factor_trees, factors);
+  ZZ cap = findmax(primes, factor_trees);
+
+  std::cout << "Cap: " << cap;
 
   if (truncp <= cap) { 
-    grow(tree, conv<RR>(truncp + 1));
+    grow(factor_trees.back(), conv<RR>(truncp + 1));
     return true;
   }
-*/
+
   return false;
 }
 
@@ -160,7 +131,7 @@ void expand(vector<ZZ>& primes, Stats& s){
     ZZ start_prime(0);
 
 
-    while (exp_find_noexp(primes, exp_seqs)){
+    while (exp_find(primes, exp_seqs)){
 
       bool twomode = false;
       if (last_exps == exp_seqs){ 
@@ -170,8 +141,7 @@ void expand(vector<ZZ>& primes, Stats& s){
       }
 
       while (last_exps == exp_seqs){
-
-        
+  
         primes = good_primes; 
 
         prev = good_primes[primes.size() - 1];
@@ -181,7 +151,7 @@ void expand(vector<ZZ>& primes, Stats& s){
 
         increment*= ZZ(2);
         last_exps = exp_seqs;
-        exp_find_noexp(good_primes, exp_seqs);
+        exp_find(good_primes, exp_seqs);
       }
 
       if (twomode){
@@ -204,17 +174,27 @@ void expand(vector<ZZ>& primes, Stats& s){
 
       last_exps = exp_seqs;
     }
-  }
+
+    primes.pop_back();
+    primes.push_back(prev);
+
+}
 
 
-void expand_sets(vector<vector <ZZ>>& sets, Stats& s){
+void expand_sets(vector<Node*>& sets, Stats& s){
 
   
   #pragma omp parallel for 
   for (int i = 0; i < sets.size(); ++i){
-    vector<ZZ> primes = sets[i];
+    vector<ZZ> primes;
+    strip_helper(sets[i], primes);// = sets[i];
     vector<vector<ZZ> > exp_seqs; 
     expand(primes, s);
+
+    set_max(sets[i], primes.back());
+
+//    for (auto p : primes) {std::cout << p << ", ";}
+//    std::cout << std::endl;
   } 
 }
 
@@ -246,13 +226,10 @@ ZZ primes_between(ZZ& lower, ZZ& upper){
   ZZ prime = lower;//NextPrime(lower + ZZ(1));
   ZZ num(0);
 
-
-
   while (prime < upper){
     ++num;
     prime = NextPrime(prime + (ZZ(1)));
   }
-  std::cout << '\n';
   
   return num;
 }

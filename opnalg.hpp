@@ -33,16 +33,14 @@ bool cap_check(vector<ZZ>& primes,
                int& factors);
 
 bool exp_find(vector<ZZ>& primes, 
-              vector<vector<ZZ> >& exp_seqs,
-              vector<vector<ZZ> >& leaves);
+              vector<vector<ZZ> >& exp_seqs);
 
 void record(Stats& s);
 ZZ primes_between(ZZ& lower, ZZ& upper);
 
 void expand(vector<ZZ>& primes, Stats& s);
-void expand_sets(vector<vector<ZZ> >& leaves, Stats& s);
+void expand_sets(vector<Node*>& leaves, Stats& s);
 
 void OPAN(int d);
 
-bool exp_find_noexp(vector<ZZ>& primes, 
-              vector<vector<ZZ> >& exp_seqs);
+

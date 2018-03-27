@@ -73,6 +73,48 @@ bool fail(Tree& t){
   return true;
 }
 
+void displaynode(Node* n, int depth){
+  for (int i = 0; i < depth; ++i){ std::cout << "---";} 
+  std::cout << '+';
+  std::cout << n->p << '(' << n->max << ')';
+  return;
+}
+
+void displayhelper(Node* n, int depth = 0){
+  displaynode(n, depth);
+  for (int i = 0; i < n->children.size(); ++i){
+    std::cout << std::endl;
+    for (int i = 0; i < depth; ++i){std::cout << "   ";}
+    std::cout << '|'; 
+    displayhelper(n->children[i], depth + 1);
+  }
+}
+
+void display(Tree& t){
+  Node* curr = t.root;
+  displayhelper(curr);
+  std::cout << '\n';
+}
+
+ZZ backup(Tree& t){
+
+  ZZ lastprime(-1);
+  while (!t.curr->success){
+
+    lastprime = t.curr->p;
+
+    Node* failed = t.curr;
+    t.curr = t.curr->parent;
+    delete failed;
+    t.curr->children.pop_back();
+
+    if (t.curr->p == ZZ(1) && (!t.curr->success))
+      return ZZ(1);
+  }
+
+  return lastprime;
+}
+
 void success(Tree& t){
   Node* node = t.curr;
   node = node->parent;
@@ -94,4 +136,54 @@ void success(Tree& t){
 }
 
 
+ZZ findmax(vector<ZZ>& primes, vector<Tree>& Trees){
 
+  int divisors = Trees.size() + 2;
+  ZZ max(0);  
+
+  for (int d = divisors; d > primes.size(); d--){
+    Tree& t = Trees[d - 3]; // 
+    max = std::max(max_branch(primes, t), max);
+  }
+
+  return max;
+}
+
+ZZ max_helper(Node* n, vector<ZZ>& primes, int i = 0){
+  if (i == primes.size()){
+    return n->max;
+  }
+
+  for(int j = 0; j < n->children.size(); ++j){
+    //Replace with binary search.
+    if (n->children[j]->p == primes[i]){
+      return max_helper(n->children[j], primes, i + 1);
+    }
+  }
+
+  return ZZ(0); // Incomplete;
+}
+
+ZZ max_branch(vector<ZZ>& primes, Tree& t){
+
+  Node* curr = t.root;
+  int i = 0;
+
+  return max_helper(curr, primes);
+}
+
+
+
+void set_max(Node* n, ZZ& p){
+
+  n->p = p;
+  Node* curr = n;  
+
+  while (curr->p != ZZ(1)){
+    if (p > curr->max){
+      curr->max = p;
+      curr = curr->parent;
+    } else {return;}
+  }
+  curr->max = p;
+}

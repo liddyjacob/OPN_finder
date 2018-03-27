@@ -31,6 +31,7 @@ struct Node{
   }
 
   ZZ p;
+  ZZ max;
   bool tried;
   bool success;
 
@@ -60,6 +61,12 @@ vector<ZZ> strip_primes(Tree& t);
 void replace(Tree& t, ZZ rep);
 
 bool fail(Tree& t);
-
+void display(Tree& t);
+ZZ backup(Tree& t);
 void success(Tree& t);
 
+ZZ max_branch(vector<ZZ>& primes,Tree& t);
+
+void set_max(Node* n, ZZ& p);
+
+ZZ findmax(vector<ZZ>& primes, vector<Tree>& trees);
