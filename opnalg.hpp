@@ -5,10 +5,9 @@
 #include <vector>
 #include <omp.h>
 #include <fstream>
+#include "tools.hpp"
 #include "tree.hpp"
 #include "expalg.hpp"
-#include "tools.hpp"
-
 using std::vector;
 using NTL::ZZ;
 using NTL::RR;
@@ -17,7 +16,7 @@ using NTL::pow;
 struct Stats{
 
   Stats(ZZ updatefreq = ZZ(10007))// 100003
-  { freq = updatefreq; }
+  { freq = updatefreq; number_found = 0;}
 
   ZZ number_found;
   ZZ freq;
@@ -46,4 +45,4 @@ void expand_sets(vector<vector<ZZ> >& leaves, Stats& s);
 void OPAN(int d);
 
 bool exp_find_noexp(vector<ZZ>& primes, 
-              vector<vector<ZZ> >& exp_seqs, Stats& s);
+              vector<vector<ZZ> >& exp_seqs);

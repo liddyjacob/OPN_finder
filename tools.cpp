@@ -15,15 +15,13 @@ using NTL::conv;
 using NTL::NextPrime;
 //#define DEBUG
 
-#ifdef DEBUG
+
 template<typename T>
 void printvect(vector<T> vect){
   for (auto v : vect){
     std::cout << v << ", ";
   }
 }
-#endif
-
 
 RR Delta(ZZ& p, ZZ& e);
 RR Delta(ZZ& p);

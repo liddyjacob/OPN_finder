@@ -15,10 +15,8 @@ using NTL::conv;
 using NTL::NextPrime;
 //#define DEBUG
 
-#ifdef DEBUG
 template<typename T>
 void printvect(vector<T> vect);
-#endif
 
 
 RR Delta(ZZ& p, ZZ& e);

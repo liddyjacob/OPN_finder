@@ -2,15 +2,12 @@
 //#include "tree.hpp"
 //#include "expalg.hpp"
 //#include "tools.hpp"
-
-
 #include "opnalg.hpp"
-
 
 void OPAN(int d){
 
   std::vector<Tree> factor_trees;
-  Stats s(ZZ(17));
+  Stats s(ZZ(1));
 
   for (int factors = 3; factors <= d; ++factors){
 
@@ -102,7 +99,7 @@ bool exp_find(vector<ZZ>& primes,
 
 
 bool exp_find_noexp(vector<ZZ>& primes, 
-              vector<vector<ZZ> >& exp_seqs, Stats& s){
+              vector<vector<ZZ> >& exp_seqs){
   if (!exp_seqs.empty()){
     int i = 0;
 
@@ -115,25 +112,18 @@ bool exp_find_noexp(vector<ZZ>& primes,
     if (i != exp_seqs.size()) {
 
       exp_seqs = expAlg(primes);
-      if (!exp_seqs.empty()){
-       modify(s, primes, exp_seqs);
-       return true;
-      }
+      return (!exp_seqs.empty());
 
-      return false;
     } else {
-      modify(s, primes, exp_seqs);
+
       return true;
+
     }
   }
 
   exp_seqs = expAlg(primes);
 
-  if (!exp_seqs.empty()){
-    modify(s, primes, exp_seqs);
-    return true;
-  }
-  return false;
+  return (!exp_seqs.empty());
 }
 
 
@@ -161,48 +151,56 @@ bool cap_check(vector<ZZ>& primes,
 void expand(vector<ZZ>& primes, Stats& s){
 
     vector<vector<ZZ> > exp_seqs;
-    ZZ prev;
+    ZZ prev(0);
 
     vector<vector<ZZ> > last_exps;
-    bool two_mode = false;
-    ZZ powerOfTwo(2);
-    ZZ last_prime(0);
+    vector<ZZ> good_primes;
+
+    ZZ increment(2);
+    ZZ start_prime(0);
 
 
-    while (exp_find_noexp(primes, exp_seqs, s) || two_mode){
+    while (exp_find_noexp(primes, exp_seqs)){
 
-      //Two mode:
-      if (last_exps == exp_seqs){
-        
-        two_mode = true;
-        powerOfTwo *= ZZ(2);
-
-        prev = primes[primes.size() - 1];
-
-        primes.pop_back();
-        primes.push_back(NextPrime(powerOfTwo + prev));
-
-        ZZ num_primes = primes_between(last_prime, prev);
-        s.number_found += num_primes * exp_seqs.size();
-        record(s);
-
-        last_prime = prev;
-        last_exps = exp_seqs;
-
-        continue;
+      bool twomode = false;
+      if (last_exps == exp_seqs){ 
+        good_primes = primes; 
+        start_prime = primes[primes.size() - 1];
+        twomode = true;
       }
 
-      two_mode = false;
-      prev = last_prime;
-      powerOfTwo = ZZ(2);
-      last_prime = ZZ(0);
+      while (last_exps == exp_seqs){
 
-      //Otherwise: return things to normal.
-      record(s);
+        
+        primes = good_primes; 
 
-      ZZ prev = primes[primes.size() - 1];
+        prev = good_primes[primes.size() - 1];
+        ZZ next = NextPrime(prev + increment);
+        good_primes.pop_back();
+        good_primes.push_back(next);
+
+        increment*= ZZ(2);
+        last_exps = exp_seqs;
+        exp_find_noexp(good_primes, exp_seqs);
+      }
+
+      if (twomode){
+        s.number_found += last_exps.size() 
+          * primes_between(start_prime, primes[primes.size() - 1]);
+
+        twomode = false;
+        modify(s, primes, last_exps);
+      } else {
+        modify(s, primes, exp_seqs); // < Should be last_exps
+      }
+
+      increment = ZZ(2);
+      record(s); 
+ 
+      prev = primes[primes.size() - 1];
+      ZZ next = NextPrime(prev + ZZ(1));
       primes.pop_back();
-      primes.push_back(NextPrime(prev + ZZ(1)));
+      primes.push_back(next);
 
       last_exps = exp_seqs;
     }
@@ -242,16 +240,19 @@ void record(Stats& s){
 
 ZZ primes_between(ZZ& lower, ZZ& upper){
 
+
   if (lower == ZZ(0)) { return ZZ(0); }
 
-  ZZ prime = NextPrime(lower + ZZ(1));
+  ZZ prime = lower;//NextPrime(lower + ZZ(1));
   ZZ num(0);
+
 
 
   while (prime < upper){
     ++num;
     prime = NextPrime(prime + (ZZ(1)));
   }
+  std::cout << '\n';
   
   return num;
 }
@@ -268,7 +269,18 @@ ZZ product(vector<ZZ>& primes, vector<ZZ>& exps){
 }
 
 void modify(Stats& s, vector<ZZ>& primes, vector<vector<ZZ> >& exp_seqs){
+/*  std::cout << "OPNs:";
 
+  for (auto exp : exp_seqs){
+    std::cout << "\n\t";  
+
+    for (int i = 0; i < exp.size(); ++i){
+      std::cout << primes[i] << "^" << exp[i] << ' ';
+    }
+  }
+  std::cout << '\n';
+*/
+  
   s.number_found += exp_seqs.size();
   
   for (auto& exps : exp_seqs){
