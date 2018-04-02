@@ -35,12 +35,12 @@ bool cap_check(vector<ZZ>& primes,
 bool exp_find(vector<ZZ>& primes, 
               vector<vector<ZZ> >& exp_seqs);
 
-void record(Stats& s);
+void record_branch(vector<ZZ>& primes, ZZ& num_found);
+void record(Stats& s, bool endflag = false);
 ZZ primes_between(ZZ& lower, ZZ& upper);
 
-void expand(vector<ZZ>& primes, Stats& s);
+void expand(vector<ZZ>& primes, ZZ& nums);
 void expand_sets(vector<Node*>& leaves, Stats& s);
-
 void OPAN(int d);
 
 

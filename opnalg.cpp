@@ -4,13 +4,16 @@
 //#include "tools.hpp"
 #include "opnalg.hpp"
 
+#include <algorithm>//std::fill
+
 void OPAN(int d){
 
   std::vector<Tree> factor_trees;
-  Stats s(ZZ(1));
+  Stats s(ZZ(1009));
 
   for (int factors = 3; factors <= d; ++factors){
 
+    s.number_found = ZZ(0);
     factor_trees.push_back(Tree());
     Tree& tree = factor_trees.back();
       grow(tree, RR(3));
@@ -59,9 +62,9 @@ void OPAN(int d){
     expand_sets(leaves, s);
   }
 
-  for (auto& tree : factor_trees){
-    display(tree);
-  }
+//  for (auto& tree : factor_trees){
+//    display(tree);
+//  }
 
   return;
 }
@@ -105,12 +108,7 @@ bool cap_check(vector<ZZ>& primes,
   if (primes.size() == factors - 1){
     return false;
   }
-  std::cout << "Primes are the right size!\n";
-
   ZZ cap = findmax(primes, factor_trees);
-
-  std::cout << "Cap: " << cap;
-
   if (truncp <= cap) { 
     grow(factor_trees.back(), conv<RR>(truncp + 1));
     return true;
@@ -119,7 +117,7 @@ bool cap_check(vector<ZZ>& primes,
   return false;
 }
 
-void expand(vector<ZZ>& primes, Stats& s){
+void expand(vector<ZZ>& primes, ZZ& num){
 
     vector<vector<ZZ> > exp_seqs;
     ZZ prev(0);
@@ -155,17 +153,19 @@ void expand(vector<ZZ>& primes, Stats& s){
       }
 
       if (twomode){
-        s.number_found += last_exps.size() 
+        
+        num += last_exps.size() 
           * primes_between(start_prime, primes[primes.size() - 1]);
-
+        num += last_exps.size();
         twomode = false;
-        modify(s, primes, last_exps);
+        //modify(s, primes, last_exps);
       } else {
-        modify(s, primes, exp_seqs); // < Should be last_exps
+        num += exp_seqs.size();
+        //modify(s, primes, exp_seqs); // < Should be last_exps
       }
 
       increment = ZZ(2);
-      record(s); 
+      //record(s); 
  
       prev = primes[primes.size() - 1];
       ZZ next = NextPrime(prev + ZZ(1));
@@ -183,24 +183,46 @@ void expand(vector<ZZ>& primes, Stats& s){
 
 void expand_sets(vector<Node*>& sets, Stats& s){
 
+
+  vector<ZZ> nums(sets.size());
+  std::fill(nums.begin(), nums.end(), ZZ(0));  
   
   #pragma omp parallel for 
   for (int i = 0; i < sets.size(); ++i){
     vector<ZZ> primes;
     strip_helper(sets[i], primes);// = sets[i];
     vector<vector<ZZ> > exp_seqs; 
-    expand(primes, s);
-
+    expand(primes, nums[i]);
+    record_branch(primes, nums[i]);
     set_max(sets[i], primes.back());
+  }
 
-//    for (auto p : primes) {std::cout << p << ", ";}
-//    std::cout << std::endl;
-  } 
+  for(auto& n : nums){
+    s.number_found+= n;
+  }
+
+  record(s, true);
 }
 
-void record(Stats& s){
 
-  if (s.number_found % s.freq == ZZ(0)){
+void record_branch(vector<ZZ>& primes, ZZ& num_found){
+  std::ofstream file;
+  file.open("stats.txt", std::ios::app);
+
+  file << "\tPrimes: ";
+  for (int i = 0; i < primes.size(); ++i){
+      file << primes[i] << ',';
+  }
+  file << '\n' << "\tNumber Found: " << num_found << "\n\n";
+
+  file.close();
+}
+
+
+void record(Stats& s, bool endflag){
+
+  #pragma omp flush(s)
+  if (s.number_found % s.freq == ZZ(0) || endflag){
   std::ofstream file;
   file.open("stats.txt", std::ios::app);
 
@@ -219,7 +241,6 @@ void record(Stats& s){
 }
 
 ZZ primes_between(ZZ& lower, ZZ& upper){
-
 
   if (lower == ZZ(0)) { return ZZ(0); }
 
@@ -258,6 +279,7 @@ void modify(Stats& s, vector<ZZ>& primes, vector<vector<ZZ> >& exp_seqs){
   std::cout << '\n';
 */
   
+  #pragma omp flush(s)
   s.number_found += exp_seqs.size();
   
   for (auto& exps : exp_seqs){
