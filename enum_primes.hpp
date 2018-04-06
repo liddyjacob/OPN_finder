@@ -21,6 +21,8 @@ public:
   ZZ back(){return *container.back();}
 
   size_t size(){return container.size();}
+  ZZ sum_primes_below(){return sum_below;}
+
 
 //private:
 
@@ -34,7 +36,7 @@ public:
 std::size_t next_index(ZZ& lower, Enum_Primes& primes);
 //std::size_t index_helper(std::size_t start, std::size_t end);
 
-bool isInRange(Enum_Primes plist, ZZ low_bound);
+bool isInRange(ZZ& low_bound, Enum_Primes& plist);
 bool isIndexed(Enum_Primes plist, size_t startat);
 
 ZZ primes_between(ZZ& low, ZZ& high, Enum_Primes& primes);

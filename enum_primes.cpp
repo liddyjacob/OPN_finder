@@ -12,10 +12,13 @@ using std::size_t;
 //const size_t MAX_CONTAINER = 10000000;
 Enum_Primes::Enum_Primes(ZZ lower, size_t size) {
   sum_below = ZZ(0);
-
   ZZ* ptr_prime = new ZZ(NextPrime(lower));
   container.push_back(ptr_prime);
   find_next_prime(size);
+  set_sum_below();
+
+
+
 }
 
 ZZ Enum_Primes::operator[](std::size_t index){
@@ -27,10 +30,11 @@ ZZ Enum_Primes::operator[](std::size_t index){
 
 void
 Enum_Primes::set_sum_below(){
-  ZZ prime(2);
 
-  for (ZZ prime(2); prime < *container.front(); 
-       prime = NextPrime(prime + ZZ(1))){
+
+  for (ZZ prime(2); prime < *(container.front()); 
+        prime = NextPrime(prime + ZZ(1)))
+  {
     sum_below+=ZZ(1);
   }
 }
@@ -64,13 +68,14 @@ std::size_t next_index(ZZ& lower, Enum_Primes& primes){
 
   while (start <= end){
     size_t mid = start + (end - start) / 2;
-
+    //std::cout << "Mid : " << mid<< '\n';
+ 
     if (primes[mid] == lower) return mid; 
     if (primes[mid] < lower){ 
 
       if (lower < primes[mid + 1]) { return mid + 1; }
 
-      if (lower > primes[mid + 1]) { start = mid + 1; }
+      if (lower >= primes[mid + 1]) { start = mid + 1; }
     } else {
       end = mid - 1;
     }
@@ -85,7 +90,7 @@ std::size_t index_helper(std::size_t start, std::size_t end, primes){
 }
 */
 
-bool isInRange(Enum_Primes plist, ZZ low_bound){
+bool isInRange(ZZ& low_bound, Enum_Primes& plist){
 
   return (  ( low_bound > plist.front() ) 
          && (low_bound < plist.back()));
@@ -98,3 +103,48 @@ bool isIndexed(Enum_Primes plist, size_t startat){
   return true;
 
 }
+
+ZZ primes_before(ZZ& upper, Enum_Primes& list){
+   //std::cout << "In primes before: " << upper << ':' << '\n'; 
+  
+
+  if (isInRange(upper, list))
+    { return next_index(upper, list) + list.sum_primes_below(); }
+
+  ZZ lastprime(2);
+  ZZ index(0);
+  
+  if (list.back() < upper){
+    lastprime = list.back();
+    index = list.size() + list.sum_primes_below() - ZZ(2);
+  }
+  
+  while (lastprime <= upper){
+      index+=ZZ(1);
+      lastprime = NextPrime(lastprime + ZZ(1));
+  }
+    
+  return index;
+}
+
+ZZ primes_between(ZZ& lower, ZZ& upper, Enum_Primes& list){
+
+  //std::cout << "In primes_between: " << lower << ':' <<  upper << '\n'; 
+  if ((lower > list.back()) || (upper < list.front())){
+    ZZ index(0);
+    ZZ curr = NextPrime(lower);
+    while (curr < upper){
+      curr = NextPrime(curr + ZZ(1));
+      index+= ZZ(1);
+    }
+
+    //std::cout << "exit prime between: " << lower << ':' <<  upper << '\n';  
+    return index;
+  }
+
+  ZZ diff = primes_before(upper, list) - primes_before(lower, list);
+  //std::cout << "exit: " << lower << ':' <<  upper << '\n'; 
+ 
+  return diff;
+};
+

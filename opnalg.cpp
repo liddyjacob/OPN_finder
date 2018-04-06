@@ -117,7 +117,7 @@ bool cap_check(vector<ZZ>& primes,
   return false;
 }
 
-void expand(vector<ZZ>& primes, ZZ& num){
+void expand(vector<ZZ>& primes, ZZ& num, Enum_Primes& list){
 
     vector<vector<ZZ> > exp_seqs;
     ZZ prev(0);
@@ -155,7 +155,7 @@ void expand(vector<ZZ>& primes, ZZ& num){
       if (twomode){
         
         num += last_exps.size() 
-          * primes_between(start_prime, primes[primes.size() - 1]);
+          * primes_between(start_prime, primes[primes.size() - 1], list);
         num += last_exps.size();
         twomode = false;
         //modify(s, primes, last_exps);
@@ -183,6 +183,10 @@ void expand(vector<ZZ>& primes, ZZ& num){
 
 void expand_sets(vector<Node*>& sets, Stats& s){
 
+  ZZ lower(2);
+  std::size_t size = 10000;
+  if (sets.size() >= 10000){size == MAX_CONTAINER;}
+  Enum_Primes list(lower, size);
 
   vector<ZZ> nums(sets.size());
   std::fill(nums.begin(), nums.end(), ZZ(0));  
@@ -192,7 +196,7 @@ void expand_sets(vector<Node*>& sets, Stats& s){
     vector<ZZ> primes;
     strip_helper(sets[i], primes);// = sets[i];
     vector<vector<ZZ> > exp_seqs; 
-    expand(primes, nums[i]);
+    expand(primes, nums[i], list);
     record_branch(primes, nums[i]);
     set_max(sets[i], primes.back());
   }
@@ -244,6 +248,7 @@ ZZ primes_between(ZZ& lower, ZZ& upper){
 
   if (lower == ZZ(0)) { return ZZ(0); }
 
+  
   if (upper - lower > ZZ(1000)){
 
   ZZ prime = lower;//NextPrime(lower + ZZ(1));
@@ -290,7 +295,7 @@ void modify(Stats& s, vector<ZZ>& primes, vector<vector<ZZ> >& exp_seqs){
   std::cout << '\n';
 */
   
-  #pragma omp flush(s)
+//  #pragma omp flush(s)
   s.number_found += exp_seqs.size();
   
   for (auto& exps : exp_seqs){

@@ -6,6 +6,7 @@
 #include <omp.h>
 #include <fstream>
 #include "tools.hpp"
+#include "enum_primes.hpp"
 #include "tree.hpp"
 #include "expalg.hpp"
 using std::vector;
@@ -39,7 +40,7 @@ void record_branch(vector<ZZ>& primes, ZZ& num_found);
 void record(Stats& s, bool endflag = false);
 ZZ primes_between(ZZ& lower, ZZ& upper);
 
-void expand(vector<ZZ>& primes, ZZ& nums);
+void expand(vector<ZZ>& primes, ZZ& nums, Enum_Primes& list);
 void expand_sets(vector<Node*>& leaves, Stats& s);
 void OPAN(int d);
 
