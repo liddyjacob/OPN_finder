@@ -12,10 +12,16 @@ int main(){
 //  ZZ prime = QuickNext(prime_list, index, lowbound);
 //  ZZ primes_between = QuickPi(prime_list, index, lowbound) - QuickPi(   
 
-  Enum_Primes prime_list(ZZ(2), 1000);
+  Enum_Primes prime_list(ZZ(5), 1000);
 
   std::cout << "100000000 is not indexable, correct? " 
             << ! isIndexed(prime_list, 1000000000) << '\n';
+
+  ZZ lower(500);
+  size_t ni = next_index(lower, prime_list);
+  
+  std::cout << "Index after 500: " << ni << '\n' << "Prime after 500: " 
+            << prime_list[ni] << '\n';
 //  if isQuick(low_bound, prime_list);
 //  if isQuick(index, prime_list);
 
