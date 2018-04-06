@@ -121,13 +121,13 @@ void expand(vector<ZZ>& primes, ZZ& num, Enum_Primes& list){
 
     vector<vector<ZZ> > exp_seqs;
     ZZ prev(0);
-
     vector<vector<ZZ> > last_exps;
     vector<ZZ> good_primes;
-
     ZZ increment(2);
     ZZ start_prime(0);
-
+    //size_t pindex(0);
+    //bool inrange = isInRange(primes.back(), list);
+    //if (inrange) {pindex = next_index(primes.back(), list);}
 
     while (exp_find(primes, exp_seqs)){
 
@@ -158,20 +158,25 @@ void expand(vector<ZZ>& primes, ZZ& num, Enum_Primes& list){
           * primes_between(start_prime, primes[primes.size() - 1], list);
         num += last_exps.size();
         twomode = false;
+        //if (isInRange(primes.back(), list)){
+        //  pindex = next_index(primes[primes.size() - 1], list);
+        //}
         //modify(s, primes, last_exps);
       } else {
         num += exp_seqs.size();
         //modify(s, primes, exp_seqs); // < Should be last_exps
       }
 
-      increment = ZZ(2);
       //record(s); 
- 
+
+      increment = ZZ(2); 
+
       prev = primes[primes.size() - 1];
       ZZ next = NextPrime(prev + ZZ(1));
+
       primes.pop_back();
       primes.push_back(next);
-
+ 
       last_exps = exp_seqs;
     }
 
