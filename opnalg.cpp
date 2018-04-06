@@ -244,15 +244,26 @@ ZZ primes_between(ZZ& lower, ZZ& upper){
 
   if (lower == ZZ(0)) { return ZZ(0); }
 
+  if (upper - lower > ZZ(1000)){
+
   ZZ prime = lower;//NextPrime(lower + ZZ(1));
   ZZ num(0);
 
   while (prime < upper){
     ++num;
-    prime = NextPrime(prime + (ZZ(1)));
+    prime = NextPrime(prime + (ZZ(2)));
   }
-  
+
   return num;
+
+  } else {
+    //Approximate
+    RR pbeforeu = conv<RR>(upper) / NTL::log(conv<RR>(upper));
+    RR pbeforel = conv<RR>(lower) / NTL::log(conv<RR>(lower));
+    RR diff = pbeforeu - pbeforel;
+    return conv<ZZ>(diff);
+  
+  }
 }
 
 ZZ product(vector<ZZ>& primes, vector<ZZ>& exps){
