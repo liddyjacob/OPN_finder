@@ -11,9 +11,9 @@ int main(){
 
 //  ZZ prime = QuickNext(prime_list, index, lowbound);
 //  ZZ primes_between = QuickPi(prime_list, index, lowbound) - QuickPi(   
-/*
-  Enum_Primes prime_list(ZZ(21), 1000);
 
+//  Enum_Primes prime_list(ZZ(21), 1000000);
+/*
   std::cout << "Primes below: " << prime_list.sum_primes_below() << '\n';
 
   std::cout << "100000000 is not indexable, correct? " 
@@ -25,13 +25,15 @@ int main(){
   std::cout << "Index after 503: " << ni << '\n' << "Prime after 503: " 
             << prime_list[ni] << '\n';
 
-  ZZ st(30), f(50);
-  std::cout << "Primes before 30 and above 10: " << 
+  std::cout << "calculating primes between 500000 and 1000000\n";
+  ZZ st(5000000), f(10000000);
+  std::cout << "num Prime: " << 
     primes_between(st, f, prime_list) << '\n';
+*/
 //  if isQuick(low_bound, prime_list);
 //  if isQuick(index, prime_list);
 
- 
+/* 
   for(auto p : prime_list.container){
     std::cout << *p << ' ';
   }
@@ -39,7 +41,7 @@ int main(){
 */
 //  for (int i = 0; i < 10000000000; ++i){}
 
-  OPAN(6);
+  OPAN(5);
 //  test_list();
 /*
   vector<ZZ> primes;

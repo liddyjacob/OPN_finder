@@ -14,6 +14,8 @@ using NTL::ZZ;
 using NTL::RR;
 using NTL::pow;
 
+#define MAX 0
+
 struct Stats{
 
   Stats(ZZ updatefreq = ZZ(10007))// 100003
@@ -37,6 +39,8 @@ bool exp_find(vector<ZZ>& primes,
               vector<vector<ZZ> >& exp_seqs);
 
 void record_branch(vector<ZZ>& primes, ZZ& num_found);
+void record_max(vector<ZZ>& primes, vector<ZZ>& exps);
+
 void record(Stats& s, bool endflag = false);
 ZZ primes_between(ZZ& lower, ZZ& upper);
 
