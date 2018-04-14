@@ -2,6 +2,7 @@
 //#include "tree.hpp"
 //#include "expalg.hpp"
 //#include "tools.hpp"
+#include "enum_primes.hpp"
 #include "opnalg.hpp"
 #include <algorithm>//std::fill
 
@@ -43,28 +44,18 @@ void OPAN(int d){
         continue;
       }
 
-
       if (exp_find(primes, exp_seqs)){
         leaves.push_back(tree.curr);
         success(tree);
-        fail(tree);
-  
-        //std::cout << "Primes size is checked...\n";
+        fail(tree); 
       } else {
-        //cap check - see if primes is at its cap!
         if (!cap_check(primes, factor_trees, factors)){ 
-
           growing = fail(tree);
         }
       }
     }
     expand_sets(leaves, s);
   }
-
-//  for (auto& tree : factor_trees){
-//    display(tree);
-//  }
-
   return;
 }
 
@@ -116,74 +107,6 @@ bool cap_check(vector<ZZ>& primes,
   return false;
 }
 
-#ifndef MAX
-void expand(vector<ZZ>& primes, ZZ& num, Enum_Primes& list){
-
-    vector<vector<ZZ> > exp_seqs;
-    ZZ prev(0);
-    vector<vector<ZZ> > last_exps;
-    vector<ZZ> new_primes;
-    ZZ increment(2);
-    ZZ start_prime(0);
-    //size_t pindex(0);
-    //bool inrange = isInRange(primes.back(), list);
-    //if (inrange) {pindex = next_index(primes.back(), list);}
-
-    while (exp_find(primes, exp_seqs)){
-
-      bool twomode = false;
-      if (last_exps == exp_seqs){ 
-        new_primes = primes; 
-        start_prime = primes[primes.size() - 1];
-        twomode = true;
-      }
-
-      while (last_exps == exp_seqs){
-  
-        primes = new_primes; 
-
-        prev = new_primes[primes.size() - 1];
-        ZZ next = NextPrime(prev + increment);
-        new_primes.pop_back();
-        new_primes.push_back(next);
-
-        increment*= ZZ(2);
-        last_exps = exp_seqs;
-        exp_find(new_primes, exp_seqs);
-
-      }
-
-      if (twomode){
-        
-        num += last_exps.size() 
-          * primes_between(start_prime, primes[primes.size() - 1], list);
-        num += last_exps.size();
-        twomode = false;
-        //if (isInRange(primes.back(), list)){
-        //  pindex = next_index(primes[primes.size() - 1], list);
-        //}
-        //modify(s, primes, last_exps);
-      } else {
-        num += exp_seqs.size();
-        //modify(s, primes, exp_seqs); // < Should be last_exps
-      }
-
-      //record(s); 
-
-      increment = ZZ(2); 
-
-      prev = primes[primes.size() - 1];
-      ZZ next = NextPrime(prev + ZZ(1));
-
-      primes.pop_back();
-      primes.push_back(next);
- 
-      last_exps = exp_seqs;
-    }
-    primes.pop_back();
-    primes.push_back(prev);
-}
-#endif
 ZZ product(vector<ZZ>& primes, vector<ZZ>& exps){
   //assert(primes.size() == exps.size());
   ZZ product(1);
@@ -193,15 +116,13 @@ ZZ product(vector<ZZ>& primes, vector<ZZ>& exps){
   return product;
 }
 
-#ifdef MAX
-void expand_max(vector<ZZ>& primes, vector<ZZ>& maxprimes, vector<ZZ>& maxexps){
-
+void expand(vector<ZZ>& primes, ZZ& num, Enum_Primes& list){
     vector<vector<ZZ> > exp_seqs;
     ZZ prev(0), next(0), bad(0); // previous next prime
     vector<vector<ZZ> > last_exps;
     vector<ZZ> new_primes;
     ZZ increment(2);
-    //ZZ start_prime(0);
+    ZZ start_prime(0);
     ZZ maxproduct(0);
 
     while (exp_find(primes, exp_seqs)){
@@ -209,8 +130,9 @@ void expand_max(vector<ZZ>& primes, vector<ZZ>& maxprimes, vector<ZZ>& maxexps){
       bool twomode = false;
       if (last_exps == exp_seqs){ 
         new_primes = primes; 
-        //start_prime = primes[primes.size() - 1];
+        start_prime = primes[primes.size() - 1];
         twomode = true;
+        bool comedown = false;
 
         while (increment >= ZZ(2)){//(last_exps == exp_seqs){        
           new_primes = primes;
@@ -228,30 +150,31 @@ void expand_max(vector<ZZ>& primes, vector<ZZ>& maxprimes, vector<ZZ>& maxexps){
           }
 
           if (last_exps == exp_seqs){
-            //std::cout << "THE SAME---------------!\n";
-            increment *= ZZ(2);
+
+            if (!comedown){ increment *= ZZ(4); }
             primes = new_primes; // Move on to new primes
             exp_seqs;
+
           } else {
-            //std::cout << "Not the same\n"; 
+             
+            comedown = true;
             increment /= ZZ(4);
             bad = next;
             exp_seqs = last_exps;
           }
         
         }
+
+        num += last_exps.size() 
+          * primes_between(start_prime, primes[primes.size() - 1], list);
+
+        num += last_exps.size();
+        twomode = false; 
+      } else {
+        num += exp_seqs.size();
       }
 
       increment = ZZ(2); 
-
-      for (auto& exps : exp_seqs){ 
-        if (maxproduct < product(primes, exps)){
-          maxproduct = product(primes, exps);
-          maxprimes = primes;
-          maxexps = exps;
-        }
-      }
-
       prev = primes[primes.size() - 1];
       next = NextPrime(prev + ZZ(1));
 
@@ -265,68 +188,34 @@ void expand_max(vector<ZZ>& primes, vector<ZZ>& maxprimes, vector<ZZ>& maxexps){
     primes.push_back(prev);
 }
 
-#endif
-
-
 void expand_sets(vector<Node*>& sets, Stats& s){
 
   ZZ lower(2);
   std::size_t size = 10000;
-  if (sets.size() >= 10000){size == MAX_CONTAINER;}
-  Enum_Primes list(lower, size);
+  std::cout << "Iterations to do: " << sets.size();
+  if (sets.size() >= 9){size == MAX_CONTAINER;}
+  Enum_Primes list(lower);//, size);
+  
+
 
   #ifndef MAX
   vector<ZZ> nums(sets.size());
   std::fill(nums.begin(), nums.end(), ZZ(0));  
-  #endif
-  #ifdef MAX
-  vector<ZZ> dummyprimes;
-  strip_helper(sets[0], dummyprimes);
-  size_t primesize = dummyprimes.size();  
-  vector<ZZ> dvector(primesize);
-    std::fill(dvector.begin(), dvector.end(), ZZ(0));
-  vector<vector<ZZ>> max_primes(sets.size());
-  std::fill(max_primes.begin(), max_primes.end(), dvector);
-  vector<vector<ZZ>> max_exps(sets.size());
-  std::fill(max_exps.begin(), max_exps.end(), dvector); 
-  #endif
-
 
   #pragma omp parallel for 
   for (int i = 0; i < sets.size(); ++i){
     vector<ZZ> primes;
     strip_helper(sets[i], primes);// = sets[i];
-    vector<vector<ZZ> > exp_seqs; 
-    #ifndef MAX
+    vector<vector<ZZ> > exp_seqs;
     expand(primes, nums[i], list);
     record_branch(primes, nums[i]);
-    #endif
-    #ifdef MAX
-    expand_max(primes, max_primes[i], max_exps[i]);
-    record_max(max_primes[i], max_exps[i]);
-    #endif
     set_max(sets[i], primes.back());
   }
-  std::cout << "finished loop\n";
-
-  #ifndef MAX
+ 
   for(auto& n : nums){
     s.number_found+= n;
   }
 
-  #endif
-  #ifdef MAX
-  ZZ maxproduct(0);
-  size_t maxindex = -1;
-  for (size_t i = 0; i < max_primes.size(); ++i){
-    if (product(max_primes[i], max_exps[i]) > maxproduct){
-      maxproduct = product(max_primes[i], max_exps[i]);
-      maxindex = i;
-    }
-  }
-  s.max_primes = max_primes[maxindex];
-  s.max_exps = max_exps[maxindex];
-  #endif
   record(s, true);
 }
 
@@ -363,13 +252,8 @@ void record(Stats& s, bool endflag){
   #pragma omp flush(s)
   if (s.number_found % s.freq == ZZ(0) || endflag){
   std::ofstream file;
-  #ifndef MAX
-  file.open("stats.txt", std::ios::app);
-  #endif
-  #ifdef MAX
-  file.open("maxes.txt", std::ios::app);
-  #endif
 
+  file.open("stats.txt", std::ios::app);
   file << "Number Found = " << s.number_found << '\n';
   file << "Max product: ";
     for (int i = 0; i < s.max_primes.size(); ++i){
@@ -411,19 +295,6 @@ ZZ primes_between(ZZ& lower, ZZ& upper){
 
 
 void modify(Stats& s, vector<ZZ>& primes, vector<vector<ZZ> >& exp_seqs){
-/*  std::cout << "OPNs:";
-
-  for (auto exp : exp_seqs){
-    std::cout << "\n\t";  
-
-    for (int i = 0; i < exp.size(); ++i){
-      std::cout << primes[i] << "^" << exp[i] << ' ';
-    }
-  }
-  std::cout << '\n';
-*/
-  
-//  #pragma omp flush(s)
   s.number_found += exp_seqs.size();
   
   for (auto& exps : exp_seqs){
